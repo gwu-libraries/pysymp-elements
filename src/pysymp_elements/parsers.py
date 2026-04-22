@@ -195,17 +195,17 @@ def parse_user(elem) -> User:
     title = elem.find('api:title', NS)
     user.title = title.text if title is not None else None
     
-    user.initials = elem.find('api:initials', NS).text or ''
-    user.last_name = elem.find('api:last-name', NS).text or ''
-    user.first_name = elem.find('api:first-name', NS).text or ''
+    user.initials = elem.find('api:initials', NS).text if elem.find('api:initials', NS) is not None else ''
+    user.last_name = elem.find('api:last-name', NS).text if elem.find('api:last-name', NS) is not None else ''
+    user.first_name = elem.find('api:first-name', NS).text if elem.find('api:first-name', NS) is not None else ''
     
     pronouns = elem.find('api:user-preferred-pronouns', NS)
     user.user_preferred_pronouns = pronouns.text if pronouns is not None else None
     
-    user.email_address = elem.find('api:email-address', NS).text or ''
-    user.primary_group_descriptor = elem.find('api:primary-group-descriptor', NS).text or ''
-    user.position = elem.find('api:position', NS).text or ''
-    user.department = elem.find('api:department', NS).text or ''
+    user.email_address = elem.find('api:email-address', NS).text if elem.find('api:email-address', NS) is not None else ''
+    user.primary_group_descriptor = elem.find('api:primary-group-descriptor', NS).text if elem.find('api:primary-group-descriptor', NS) is not None else ''
+    user.position = elem.find('api:position', NS).text if elem.find('api:position', NS) is not None else ''
+    user.department = elem.find('api:department', NS).text if elem.find('api:department', NS) is not None else ''
     user.institutional_email_is_public = parse_bool(elem.find('api:institutional-email-is-public', NS)) or False
     user.claimed = parse_bool(elem.find('api:claimed', NS)) or False
     
@@ -313,8 +313,8 @@ def parse_relationship(elem) -> Relationship:
     last_modified_when = elem.get('last-modified-when')
     href = elem.get('href')
     
-    privacy_level = elem.find('api:privacy-level', NS).text
-    effective_privacy_level = elem.find('api:effective-privacy-level', NS).text
+    privacy_level = elem.find('api:privacy-level', NS).text if elem.find('api:privacy-level', NS) is not None else ''
+    effective_privacy_level = elem.find('api:effective-privacy-level', NS).text if elem.find('api:effective-privacy-level', NS) is not None else ''
     is_favourite = parse_bool(elem.find('api:is-favourite', NS))
     
     related = []
@@ -352,7 +352,7 @@ def parse_related_object(elem) -> RelatedObject:
 def parse_journal(elem) -> Journal:
     """Parse a journal element."""
     issn = elem.get('issn')
-    title = elem.find('api:title', NS).text
+    title = elem.find('api:title', NS).text if elem.find('api:title', NS) is not None else ''
     href = elem.get('href')
     
     records = []
@@ -519,7 +519,7 @@ def parse_field(elem) -> Field:
 
 def parse_person(elem) -> Person:
     """Parse a person element."""
-    last_name = elem.find('api:last-name', NS).text
+    last_name = elem.find('api:last-name', NS).text if elem.find('api:last-name', NS) is not None else ''
     initials = elem.find('api:initials', NS).text if elem.find('api:initials', NS) is not None else ''
     first_names = elem.find('api:first-names', NS).text if elem.find('api:first-names', NS) is not None else ''
     
@@ -568,7 +568,7 @@ def parse_link(elem) -> Link:
 
 def parse_date(elem) -> Date:
     """Parse a date element."""
-    year = int(elem.find('api:year', NS).text)
+    year = int(elem.find('api:year', NS).text) if elem.find('api:year', NS) is not None else 0
     month = elem.find('api:month', NS)
     month = int(month.text) if month is not None else None
     day = elem.find('api:day', NS)
@@ -634,7 +634,7 @@ def parse_identifier(elem) -> Identifier:
 def parse_academic_appointment(elem) -> AcademicAppointment:
     """Parse an academic appointment."""
     institution = parse_institution(elem.find('api:institution', NS))
-    position = elem.find('api:position', NS).text
+    position = elem.find('api:position', NS).text if elem.find('api:position', NS) is not None else ''
     start_date = elem.find('api:start-date', NS)
     start_date = parse_date(start_date) if start_date is not None else None
     end_date = elem.find('api:end-date', NS)
@@ -663,9 +663,9 @@ def parse_institution(elem) -> Institution:
 
 def parse_degree(elem) -> Degree:
     """Parse a degree."""
-    name = elem.find('api:name', NS).text
+    name = elem.find('api:name', NS).text if elem.find('api:name', NS) is not None else ''
     institution = parse_institution(elem.find('api:institution', NS))
-    field_of_study = elem.find('api:field-of-study', NS).text
+    field_of_study = elem.find('api:field-of-study', NS).text if elem.find('api:field-of-study', NS) is not None else ''
     start_date = elem.find('api:start-date', NS)
     start_date = parse_date(start_date) if start_date is not None else None
     end_date = elem.find('api:end-date', NS)
@@ -683,24 +683,24 @@ def parse_degree(elem) -> Degree:
 def parse_email_address(elem) -> EmailAddress:
     """Parse an email address."""
     return EmailAddress(
-        address=elem.find('api:address', NS).text,
-        type=elem.find('api:type', NS).text
+        address=elem.find('api:address', NS).text if elem.find('api:address', NS) is not None else '',
+        type=elem.find('api:type', NS).text if elem.find('api:type', NS) is not None else ''
     )
 
 
 def parse_phone_number(elem) -> PhoneNumber:
     """Parse a phone number."""
     return PhoneNumber(
-        number=elem.find('api:number', NS).text,
-        type=elem.find('api:type', NS).text
+        number=elem.find('api:number', NS).text if elem.find('api:number', NS) is not None else '',
+        type=elem.find('api:type', NS).text if elem.find('api:type', NS) is not None else ''
     )
 
 
 def parse_web_address(elem) -> WebAddress:
     """Parse a web address."""
     return WebAddress(
-        url=elem.find('api:url', NS).text,
-        label=elem.find('api:label', NS).text,
+        url=elem.find('api:url', NS).text if elem.find('api:url', NS) is not None else None,
+        label=elem.find('api:label', NS).text if elem.find('api:label', NS) is not None else None,
         type=elem.find('api:type', NS).text if elem.find('api:type', NS) is not None else None
     )
 
@@ -708,7 +708,7 @@ def parse_web_address(elem) -> WebAddress:
 def parse_non_academic_employment(elem) -> NonAcademicEmployment:
     """Parse non-academic employment."""
     employer = parse_employer(elem.find('api:employer', NS))
-    position = elem.find('api:position', NS).text
+    position = elem.find('api:position', NS).text if elem.find('api:position', NS) is not None else ''
     start_date = elem.find('api:start-date', NS)
     start_date = parse_date(start_date) if start_date is not None else None
     end_date = elem.find('api:end-date', NS)
@@ -739,8 +739,8 @@ def parse_user_search_settings(elem) -> UserSearchSettings:
 
 def parse_search_settings(elem) -> SearchSettings:
     """Parse search settings."""
-    affiliation = elem.find('api:affiliation', NS).text
-    name = elem.find('api:name', NS).text
+    affiliation = elem.find('api:affiliation', NS).text if elem.find('api:affiliation', NS) is not None else ''
+    name = elem.find('api:name', NS).text if elem.find('api:name', NS) is not None else ''
     return SearchSettings(affiliation=affiliation, name=name)
 
 
@@ -755,8 +755,8 @@ def parse_user_identifier_association(elem) -> UserIdentifierAssociation:
 
 def parse_group_properties(elem) -> GroupProperties:
     """Parse group properties."""
-    name = elem.find('api:name', NS).text
-    group_description = elem.find('api:group-description', NS).text
+    name = elem.find('api:name', NS).text if elem.find('api:name', NS) is not None else ''
+    group_description = elem.find('api:group-description', NS).text if elem.find('api:group-description', NS) is not None else ''
     
     parent = None
     parent_elem = elem.find('api:parent', NS)
