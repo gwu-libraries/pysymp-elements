@@ -2,7 +2,7 @@
 
 import requests
 from typing import Optional, List, Dict, Any
-from urllib.parse import urljoin, urlencode
+from urllib.parse import urljoin, urlencode, urlparse, parse_qs
 from .parsers import parse_response
 from .models import APIResponse, APIObject, Relationship
 
@@ -10,7 +10,7 @@ from .models import APIResponse, APIObject, Relationship
 class APIClient:
     """Client for interacting with the Symplectic Elements API."""
     
-    def __init__(self, base_url: str, username: str, password: str, version: str = 'v6.13'):
+    def __init__(self, base_url: str, username: str, password: str, version: str = 'v6.13', timeout: int = 30):
         """
         Initialize the API client.
         
@@ -19,9 +19,11 @@ class APIClient:
             username: Username for authentication
             password: Password for authentication
             version: API version (default: v6.13)
+            timeout: Request timeout in seconds (default: 30)
         """
         self.base_url = base_url.rstrip('/')
         self.api_base = f"{self.base_url}/secure-api/{version}/"
+        self.timeout = timeout
         self.session = requests.Session()
         self.session.auth = (username, password)
         self.session.headers.update({
@@ -35,7 +37,7 @@ class APIClient:
         if params:
             url += '?' + urlencode(params)
         
-        response = self.session.get(url)
+        response = self.session.get(url, timeout=self.timeout)
         response.raise_for_status()
         
         return parse_response(response.text)
@@ -46,7 +48,7 @@ class APIClient:
         if params:
             url += '?' + urlencode(params)
         
-        response = self.session.post(url, data=data, headers={'Content-Type': 'text/xml'})
+        response = self.session.post(url, data=data, headers={'Content-Type': 'text/xml'}, timeout=self.timeout)
         response.raise_for_status()
         
         return parse_response(response.text)
@@ -68,13 +70,14 @@ class APIClient:
         response = self._get(endpoint, params)
         return response.result
     
-    def get_objects(self, category: str, detail: str = 'ref', **filters) -> List[APIObject]:
+    def get_objects(self, category: str, detail: str = 'ref', max_pages: Optional[int] = None, **filters) -> List[APIObject]:
         """
-        Get a list of objects by category.
+        Get a list of objects by category, handling pagination automatically.
         
         Args:
             category: Object category
             detail: Detail level
+            max_pages: Maximum number of pages to fetch (None for all)
             **filters: Additional query parameters
         
         Returns:
@@ -83,8 +86,39 @@ class APIClient:
         endpoint = category
         params = {'detail': detail}
         params.update(filters)
-        response = self._get(endpoint, params)
-        return response.result_list
+        
+        all_results = []
+        page_count = 0
+        
+        while True:
+            response = self._get(endpoint, params)
+            all_results.extend(response.result_list)
+            page_count += 1
+            
+            if max_pages is not None and page_count >= max_pages:
+                break
+            
+            # Check for next page
+            if response.pagination:
+                next_page = None
+                for page in response.pagination.page:
+                    if page.position == 'next':
+                        next_page = page
+                        break
+                
+                if next_page:
+                    # Parse the href to get updated params
+                    from urllib.parse import urlparse, parse_qs
+                    parsed = urlparse(next_page.href)
+                    query_params = parse_qs(parsed.query)
+                    # Update params with the new after-id, etc.
+                    params.update({k: v[0] if v else '' for k, v in query_params.items()})
+                else:
+                    break
+            else:
+                break
+        
+        return all_results
     
     def get_relationship(self, id: int, detail: str = 'full') -> Relationship:
         """
@@ -138,18 +172,22 @@ class APIClient:
         params = {'validate': str(validate).lower()}
         return self._post("relationships", xml_data, params)
     
-    def get_publications(self, detail: str = 'ref', **filters) -> List[APIObject]:
+    def get_publications(self,
+                         detail: str = 'ref', # other values are 'full' and 'single-record'
+                         max_pages: Optional[int] = None,
+                         # types: str = 'book,chapter,journal-article', # See /publication/types endpoint for valid values
+                         **filters) -> List[APIObject]:
         """Get publications."""
-        return self.get_objects('publications', detail, **filters)
+        return self.get_objects('publications', detail, max_pages, **filters)
     
-    def get_users(self, detail: str = 'ref', **filters) -> List[APIObject]:
+    def get_users(self, detail: str = 'ref', max_pages: Optional[int] = None, **filters) -> List[APIObject]:
         """Get users."""
-        return self.get_objects('users', detail, **filters)
+        return self.get_objects('users', detail, max_pages, **filters)
     
-    def get_groups(self, detail: str = 'ref', **filters) -> List[APIObject]:
+    def get_groups(self, detail: str = 'ref', max_pages: Optional[int] = None, **filters) -> List[APIObject]:
         """Get groups."""
-        return self.get_objects('groups', detail, **filters)
+        return self.get_objects('groups', detail, max_pages, **filters)
     
-    def get_journals(self, detail: str = 'ref', **filters) -> List[APIObject]:
+    def get_journals(self, detail: str = 'ref', max_pages: Optional[int] = None, **filters) -> List[APIObject]:
         """Get journals."""
-        return self.get_objects('journals', detail, **filters)
+        return self.get_objects('journals', detail, max_pages, **filters)
