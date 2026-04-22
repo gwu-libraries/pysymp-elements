@@ -1,4 +1,4 @@
-# PySympElements
+# pySympElements
 
 A Python library for interacting with the Symplectic Elements API, providing easy access to publications, users, groups, and relationships as Python objects.
 
@@ -54,14 +54,6 @@ pip install pytest
 pytest
 ```
 
-## Development
-
-For development installation:
-
-```bash
-pip install -e .
-```
-
 ## API Documentation
 
 The library wraps the Symplectic Elements API v6.13. For detailed API documentation, refer to your Elements instance's API documentation or the Postman collection.
@@ -75,7 +67,3 @@ git clone <repository-url>
 cd pysymp-elements
 pip install -e .
 ```
-
-## License
-
-MIT License
