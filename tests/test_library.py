@@ -46,6 +46,9 @@ class TestParsers(unittest.TestCase):
                 <api:field name="title" display-name="Title">
                     <api:text>Sample Publication Title</api:text>
                 </api:field>
+                <api:field name="open-access-status" display-name="Open access status">
+                    <api:text>Green OA</api:text>
+                </api:field>
             </api:fields>
         </api:record>
     </api:records>
@@ -58,9 +61,10 @@ class TestParsers(unittest.TestCase):
         self.assertEqual(obj.id, 123)
         self.assertEqual(len(obj.records), 1)
         self.assertEqual(obj.records[0].source_name, 'Web of Science')
-        self.assertEqual(len(obj.records[0].fields), 1)
+        self.assertEqual(len(obj.records[0].fields), 2)
         self.assertEqual(obj.records[0].fields[0].name, 'title')
         self.assertEqual(obj.records[0].fields[0].text, 'Sample Publication Title')
+        self.assertEqual(obj.open_access_status, 'Green OA')
 
 
 if __name__ == '__main__':

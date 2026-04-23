@@ -146,12 +146,22 @@ def parse_publication(elem) -> Publication:
     pub.records = records
     
     fields = []
-    fields_elem = elem.find('api:fields', NS)
-    if fields_elem is not None:
-        for field in fields_elem.findall('api:field', NS):
-            fields.append(parse_field(field))
+    open_access_status = None
+    for record in records:
+        fields.extend(record.native)
+        fields.extend(record.fields)
+    # Find open_access_status in the aggregated fields
+    # TODO: This isn't working - it's accessible via the fields_dict for now
+    for field in fields:
+        if field.name == 'open-access-status':
+            open_access_status = field.text
+            break
     pub.fields = fields
-    
+    pub.open_access_status = open_access_status
+
+    fields_tuples_list = [(f.name, f.text) for f in fields]
+    pub.fields_dict = dict(fields_tuples_list)
+
     all_labels = []
     labels_elem = elem.find('api:all-labels', NS)
     if labels_elem is not None:
@@ -580,9 +590,22 @@ def parse_date(elem) -> Date:
 def parse_pagination_field(elem) -> Pagination:
     """Parse pagination field."""
     begin_page = elem.find('api:begin-page', NS)
-    begin_page = int(begin_page.text) if begin_page is not None else None
+    if begin_page is not None and begin_page.text is not None:
+        try:
+            begin_page = int(begin_page.text)
+        except ValueError:
+            begin_page = begin_page.text
+    else:
+        begin_page = None
+    
     end_page = elem.find('api:end-page', NS)
-    end_page = int(end_page.text) if end_page is not None else None
+    if end_page is not None and end_page.text is not None:
+        try:
+            end_page = int(end_page.text)
+        except ValueError:
+            end_page = end_page.text
+    else:
+        end_page = None
     
     return Pagination(begin_page=begin_page, end_page=end_page)
 
@@ -616,10 +639,12 @@ def parse_address(elem) -> Address:
 
 def parse_grid(elem) -> Grid:
     """Parse a grid element."""
+    lat_str = elem.get('latitude')
+    lon_str = elem.get('longitude')
     return Grid(
         id=elem.get('id'),
-        latitude=float(elem.get('latitude')),
-        longitude=float(elem.get('longitude'))
+        latitude=float(lat_str) if lat_str is not None else None,
+        longitude=float(lon_str) if lon_str is not None else None
     )
 
 

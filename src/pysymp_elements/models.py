@@ -1,7 +1,7 @@
 """Data models for Symplectic Elements API objects."""
 
 from dataclasses import dataclass, field
-from typing import List, Dict, Optional, Any
+from typing import List, Dict, Optional, Any, Union
 from dataclasses_json import dataclass_json
 
 
@@ -84,8 +84,8 @@ class Date:
 @dataclass
 class Pagination:
     """Represents pagination info."""
-    begin_page: Optional[int] = None
-    end_page: Optional[int] = None
+    begin_page: Optional[Union[int, str]] = None
+    end_page: Optional[Union[int, str]] = None
 
 
 @dataclass_json
@@ -112,8 +112,8 @@ class Address:
 class Grid:
     """Represents a GRID identifier."""
     id: str
-    latitude: float
-    longitude: float
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
 
 
 @dataclass_json
@@ -230,8 +230,10 @@ class Publication:
     relationships_href: Optional[str] = None
     # Publication specific
     reporting_date_1: Optional[str] = None
+    open_access_status: Optional[str] = None
     records: List[Record] = field(default_factory=list)
     fields: List[Field] = field(default_factory=list)
+    fields_dict: Dict[str, str] = field(default_factory=dict)
     all_labels: List[Keyword] = field(default_factory=list)
     journal: Optional['Journal'] = None
 

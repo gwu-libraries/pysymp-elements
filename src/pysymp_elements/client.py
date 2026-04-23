@@ -39,6 +39,7 @@ class APIClient:
         if params:
             url += '?' + urlencode(params)
         
+        print(f"GET {url}")  # Debug: print the URL being requested
         response = self.session.get(url, timeout=self.timeout)
         response.raise_for_status()
         
@@ -151,7 +152,27 @@ class APIClient:
         endpoint = "relationships"
         response = self._get(endpoint, filters)
         return response.result_list
-    
+
+    def get_related_objects(self, category_from: str, category_to: str, id: int, detail: str = 'ref', limit: Optional[int] = None, **filters) -> List[APIObject]:
+        """
+        Get a list of related objects
+        
+        Args:
+            category_from: Source object category (e.g., 'publications', 'users', 'groups')
+            category_to: Target object category (e.g., 'publications', 'users', 'groups')
+            id: Object ID of the source object
+            detail: Detail level ('ref', 'full', 'single-record')
+            limit: Maximum number of results to fetch (None for all)
+            **filters: Additional query parameters
+        
+        Returns:
+            The requested object
+        """
+        endpoint = f"{category_from}/{id}/{category_to}"
+        #return response.result_list
+        return self.get_objects(endpoint, detail, limit, **filters)
+
+     
     def import_relationship(self, from_object: str, to_object: str, type_name: str, validate: bool = False) -> APIResponse:
         """
         Import (create or update) a relationship.
