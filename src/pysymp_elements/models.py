@@ -236,6 +236,10 @@ class Publication:
     relationships_href: Optional[str] = None
     # Publication specific
     reporting_date_1: Optional[str] = None
+    title: Optional[str] = None
+    journal_title: Optional[str] = None
+    issn: Optional[str] = None
+    eissn: Optional[str] = None
     open_access_status: Optional[str] = None
     online_publication_date: Optional['Date'] = None
     publication_date: Optional['Date'] = None

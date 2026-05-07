@@ -92,8 +92,7 @@ def parse_object(elem) -> Any:
     elif category == 'group':
         return parse_group(elem)
     else:
-        # Generic object - but since we don't have it, return None or raise
-        return None
+        return parse_generic_object(elem)
 
 
 def parse_generic_object(elem) -> APIObject:
@@ -160,6 +159,30 @@ def parse_publication(elem) -> Publication:
         if field.name == 'authors' and field.people:
             authors.extend(field.people)
 
+    title = None
+    for field in fields:
+        if field.name == 'title':
+            title = field.text
+            break
+
+    journal_title = None
+    for field in fields:
+        if field.name == 'journal':
+            journal_title = field.text
+            break
+        
+    issn = None
+    for field in fields:
+        if field.name == 'issn':
+            issn = field.text
+            break
+
+    eissn = None
+    for field in fields:
+        if field.name == 'eissn':
+            eissn = field.text
+            break
+
     open_access_status = None
     for field in fields:
         if field.name == 'open-access-status':
@@ -180,6 +203,10 @@ def parse_publication(elem) -> Publication:
     
     pub.fields = fields
     pub.authors = authors
+    pub.title = title
+    pub.journal_title = journal_title
+    pub.issn = issn
+    pub.eissn = eissn
     pub.open_access_status = open_access_status
     pub.online_publication_date = online_publication_date
     pub.publication_date = publication_date
